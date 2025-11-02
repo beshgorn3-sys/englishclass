@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار المفردات</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 1. شاشة البداية (لعرض قائمة الاختبارات) -->
+        <div id="start-screen" class="active">
+            <h1>اختبارات اللغة الإنجليزية</h1>
+            <p>اختر اختبارًا من القائمة للبدء.</p>
+            <div id="test-list-container">
+                <!-- سيتم ملء هذه القائمة بالاختبارات المتاحة عبر JavaScript -->
+            </div>
+            <div id="name-input-container" style="display: none;">
+                <h2 id="selected-test-name"></h2>
+                <p>أدخل اسمك لبدء هذا الاختبار.</p>
+                <input type="text" id="student-name" placeholder="اكتب اسمك هنا...">
+                <button id="start-btn">بدء الاختبار</button>
+            </div>
+        </div>
+
+        <!-- 2. شاشة الاختبار الفعلية (تم تعديلها بالكامل) -->
+        <div id="quiz-screen">
+            <p id="progress-text"></p>
+            
+            <!-- ================================================== -->
+            <!-- ** التعديل الجديد هنا: قوالب أنواع الأسئلة ** -->
+            <!-- ================================================== -->
+
+            <!-- القالب 1: اختيار من متعدد (النوع الأصلي) -->
+            <div id="multiple-choice-template" class="question-template">
+                <div id="mc-word-container">
+                    <span id="mc-word-text">Word</span>
+                    <button id="mc-speak-button" title="اسمع النطق">🔊</button>
+                </div>
+                <div id="mc-options-container">
+                    <button class="option"></button>
+                    <button class="option"></button>
+                    <button class="option"></button>
+                    <button class="option"></button>
+                </div>
+            </div>
+
+            <!-- القالب 2: كتابة الكلمة -->
+            <div id="writing-template" class="question-template">
+                <h2 id="wr-meaning-text">المعنى بالعربي</h2>
+                <p>اكتب الكلمة الصحيحة باللغة الإنجليزية:</p>
+                <input type="text" id="wr-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <button id="wr-check-btn">تحقق من الإجابة</button>
+                <p id="wr-feedback"></p>
+            </div>
+
+            <!-- القالب 3: ترتيب الحروف -->
+            <div id="jumbled-letters-template" class="question-template">
+                <h2 id="jl-meaning-text">المعنى بالعربي</h2>
+                <p>اضغط على الحروف بالترتيب الصحيح لتكوين الكلمة.</p>
+                <div id="jl-answer-display" class="answer-box"></div>
+                <div id="jl-letters-container" class="letters-box">
+                    <!-- سيتم ملء أزرار الحروف هنا عبر JavaScript -->
+                </div>
+                <button id="jl-reset-btn" style="background-color: #6c757d; margin-top: 10px;">مسح</button>
+            </div>
+        </div>
+
+        <!-- 3. شاشة عرض النتائج النهائية -->
+        <div id="result-screen">
+            <h1>النتيجة النهائية</h1>
+            <h2 id="result-name"></h2>
+            <p>الإجابات الصحيحة: <span id="correct-count">0</span></p>
+            <p>الإجابات الخاطئة: <span id="incorrect-count">0</span></p>
+            <h3 id="final-score"></h3>
+            <p id="save-status">جاري حفظ نتيجتك...</p>
+            <button id="restart-btn">العودة لقائمة الاختبارات</button>
+        </div>
+        
+        <!-- مؤشر التحميل العام -->
+        <div id="loading-indicator" style="display: none;">
+            <div class="loader"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- تنسيقات إضافية للقوالب الجديدة -->
+    <style>
+        .question-template { display: none; } /* إخفاء كل القوالب افتراضيًا */
+        .answer-box {
+            min-height: 50px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 24px;
+            letter-spacing: 5px;
+            text-align: center;
+            margin: 20px 0;
+            direction: ltr; /* مهم لعرض الحروف الإنجليزية بشكل صحيح */
+        }
+        .letters-box {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            direction: ltr;
+        }
+        .letters-box button {
+            font-size: 20px;
+            width: 50px;
+            height: 50px;
+            padding: 0;
+        }
+    </style>
+
+    <!-- ربط ملف JavaScript الذي يحتوي على منطق الاختبار -->
+    <script src="script.js"></script>
+</body>
+</html>
