@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار المفردات</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 1. شاشة البداية (لعرض قائمة الاختبارات) -->
+        <div id="start-screen" class="active">
+            <h1>اختبارات اللغة الإنكليزية</h1>
+            <p>اختر اختبارًا من القائمة للبدء.</p>
+            <div id="test-list-container">
+                <!-- سيتم ملء هذه القائمة بالاختبارات المتاحة عبر JavaScript -->
+            </div>
+            <div id="name-input-container" style="display: none;">
+                <h2 id="selected-test-name"></h2>
+                <p>أدخل اسمك لبدء هذا الاختبار.</p>
+                <input type="text" id="student-name" placeholder="اكتب اسمك هنا...">
+                <button id="start-btn">بدء الاختبار</button>
+            </div>
+        </div>
+
+        <!-- 2. شاشة الاختبار الفعلية (تحتوي على كل قوالب الأسئلة) -->
+        <div id="quiz-screen" style="display: none;">
+            <p id="progress-text"></p>
+            
+            <!-- القالب 1: اختيار من متعدد -->
+            <div id="multiple-choice-template" class="question-template">
+                <div id="mc-word-container">
+                    <span id="mc-word-text">Word</span>
+                    <button id="mc-speak-button" title="اسمع النطق">🔊</button>
+                </div>
+                <div id="mc-options-container" class="options-grid">
+                    <!-- سيتم ملء الخيارات هنا -->
+                </div>
+            </div>
+
+            <!-- القالب 2: كتابة الكلمة -->
+            <div id="writing-template" class="question-template">
+                <h2 id="wr-meaning-text">المعنى بالعربي</h2>
+                <p>اكتب الكلمة الصحيحة باللغة الإنكليزية:</p>
+                <input type="text" id="wr-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <button id="wr-check-btn">تحقق من الإجابة</button>
+                <p id="wr-feedback"></p>
+            </div>
+
+            <!-- القالب 3: ترتيب الحروف -->
+            <div id="jumbled-letters-template" class="question-template">
+                <h2 id="jl-meaning-text">المعنى بالعربي</h2>
+                <p>اضغط على الحروف بالترتيب الصحيح لتكوين الكلمة.</p>
+                <div id="jl-answer-display" class="answer-box"></div>
+                <div id="jl-letters-container" class="letters-box">
+                    <!-- سيتم ملء أزرار الحروف هنا -->
+                </div>
+                <button id="jl-reset-btn" style="background-color: #6c757d; margin-top: 10px;">مسح</button>
+            </div>
+
+            <!-- القالب 4: التمييز الصوتي -->
+            <div id="phonetic-template" class="question-template">
+                <h2>استمع جيداً ثم اختر الكلمة الصحيحة.</h2>
+                <button id="ph-speak-button" title="اسمع النطق مرة أخرى">🔊 استمع للكلمة</button>
+                <div id="ph-options-container" class="options-grid">
+                    <!-- سيتم ملء أزرار الخيارات هنا -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. شاشة عرض النتائج النهائية -->
+        <div id="result-screen" style="display: none;">
+            <h1>النتيجة النهائية</h1>
+            <h2 id="result-name"></h2>
+            <p>الإجابات الصحيحة: <span id="correct-count">0</span></p>
+            <p>الإجابات الخاطئة: <span id="incorrect-count">0</span></p>
+            <h3 id="final-score"></h3>
+            <p id="save-status">جاري حفظ نتيجتك...</p>
+            <button id="restart-btn">العودة لقائمة الاختبارات</button>
+        </div>
+        
+        <!-- مؤشر التحميل العام -->
+        <div id="loading-indicator" style="display: none;">
+            <div class="loader"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- تنسيقات إضافية للقوالب الجديدة -->
+    <style>
+        .question-template { display: none; } /* إخفاء كل القوالب افتراضيًا */
+        
+        /* تنسيق صناديق الإجابة والحروف */
+        .answer-box {
+            min-height: 50px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 24px;
+            letter-spacing: 5px;
+            text-align: center;
+            margin: 20px 0;
+            direction: ltr; /* مهم لعرض الحروف الإنجليزية بشكل صحيح */
+        }
+        .letters-box {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            direction: ltr;
+        }
+        .letters-box button {
+            font-size: 20px;
+            width: 50px;
+            height: 50px;
+            padding: 0;
+        }
+
+        /* تنسيق شبكة الخيارات المستخدمة في الاختيار من متعدد والتمييز الصوتي */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .options-grid button {
+            padding: 20px 10px;
+            font-size: 18px;
+        }
+
+        /* تنسيق زر الاستماع الرئيسي في سؤال التمييز الصوتي */
+        #ph-speak-button {
+            font-size: 20px;
+            padding: 15px 30px;
+            margin: 20px auto;
+            display: block;
+            background-color: #17a2b8;
+        }
+        #ph-speak-button:hover {
+            background-color: #138496;
+        }
+    </style>
+
+    <!-- ربط ملف JavaScript الذي يحتوي على منطق الاختبار -->
+    <script src="script.js"></script>
+</body>
+</html>
