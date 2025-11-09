@@ -1,54 +1,42 @@
 // =================================================
-// script.js - النسخة الكاملة والنهائية
-// مسؤول عن منطق اختبار الطالب لجميع أنواع الأسئلة
+// script.js - نسخة مصححة لمعالجة مشكلة الصفحة البيضاء
 // =================================================
 
 // !! مهم جداً: تأكد من أن هذا الرابط هو رابط الـ API الصحيح والفعال !!
 const API_URL = "https://script.google.com/macros/s/AKfycbyA8pyKh-U9ZGZiX6nf18kASDmcwmuIvliJew-cRHPq6JKh8LlZyaCVCb-_46653OdHQw/exec";
 
 // --- إشارة إلى عناصر الصفحة (DOM Elements  ) ---
-// شاشات رئيسية
 const startScreen = document.getElementById('start-screen');
 const quizScreen = document.getElementById('quiz-screen');
 const resultScreen = document.getElementById('result-screen');
 const loadingIndicator = document.getElementById('loading-indicator');
+// **إضافة جديدة: الإشارة إلى كل الشاشات الرئيسية لتسهيل التحكم بها**
+const allScreens = [startScreen, quizScreen, resultScreen, loadingIndicator];
 
-// عناصر شاشة البداية
+// ... (بقية الإشارات إلى العناصر تبقى كما هي) ...
 const testListContainer = document.getElementById('test-list-container');
 const nameInputContainer = document.getElementById('name-input-container');
 const selectedTestName = document.getElementById('selected-test-name');
 const studentNameInput = document.getElementById('student-name');
 const startBtn = document.getElementById('start-btn');
-
-// عناصر شاشة الاختبار العامة
 const progressText = document.getElementById('progress-text');
-
-// عناصر قالب الاختيار من متعدد
 const mcTemplate = document.getElementById('multiple-choice-template');
 const mcWordText = document.getElementById('mc-word-text');
 const mcSpeakButton = document.getElementById('mc-speak-button');
 const mcOptionsContainer = document.getElementById('mc-options-container');
-
-// عناصر قالب الكتابة
 const wrTemplate = document.getElementById('writing-template');
 const wrMeaningText = document.getElementById('wr-meaning-text');
 const wrInput = document.getElementById('wr-input');
 const wrCheckBtn = document.getElementById('wr-check-btn');
 const wrFeedback = document.getElementById('wr-feedback');
-
-// عناصر قالب الحروف المبعثرة
 const jlTemplate = document.getElementById('jumbled-letters-template');
 const jlMeaningText = document.getElementById('jl-meaning-text');
 const jlAnswerDisplay = document.getElementById('jl-answer-display');
 const jlLettersContainer = document.getElementById('jl-letters-container');
 const jlResetBtn = document.getElementById('jl-reset-btn');
-
-// عناصر قالب التمييز الصوتي
 const phTemplate = document.getElementById('phonetic-template');
 const phSpeakButton = document.getElementById('ph-speak-button');
 const phOptionsContainer = document.getElementById('ph-options-container');
-
-// عناصر شاشة النتائج
 const resultName = document.getElementById('result-name');
 const correctCountSpan = document.getElementById('correct-count');
 const incorrectCountSpan = document.getElementById('incorrect-count');
@@ -59,11 +47,11 @@ const restartBtn = document.getElementById('restart-btn');
 // --- متغيرات حالة الاختبار ---
 let studentName = "";
 let selectedTestId = "";
-let testData = {}; // سيحتوي على الأسئلة ونوع الاختبار
+let testData = {};
 let currentQuestionIndex = 0;
 let correctAnswers = 0;
 let incorrectAnswers = 0;
-const FEEDBACK_DELAY = 2000; // مدة الانتظار قبل الانتقال للسؤال التالي
+const FEEDBACK_DELAY = 2000;
 
 // --- تهيئة التطبيق ---
 document.addEventListener('DOMContentLoaded', loadTests);
@@ -73,15 +61,19 @@ document.addEventListener('DOMContentLoaded', loadTests);
 function loadTests() {
     showScreen('loading');
     fetch(`${API_URL}?action=getTests`)
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error(`فشل الاتصال بالخادم (Status: ${res.status})`);
+            return res.json();
+        })
         .then(data => {
             if (data.error) throw new Error(data.error);
             displayTests(data.tests);
-            showScreen('start');
+            showScreen('start'); // <-- إظهار شاشة البداية بعد نجاح التحميل
         })
-        .catch(onFailure);
+        .catch(onFailure); // <-- التأكد من أن أي خطأ سيتم عرضه
 }
 
+// ... (بقية الدوال من displayTests إلى handleFeedback تبقى كما هي) ...
 function displayTests(tests) {
     testListContainer.innerHTML = '';
     if (!tests || tests.length === 0) {
@@ -115,32 +107,19 @@ function startQuiz() {
     displayQuestion();
 }
 
-// --- دوال عرض الأسئلة (النظام الموجه) ---
-
 function displayQuestion() {
     if (currentQuestionIndex >= testData.questions.length) {
         showResults();
         return;
     }
-    // إخفاء كل القوالب أولاً
     document.querySelectorAll('.question-template').forEach(t => t.style.display = 'none');
     progressText.textContent = `السؤال ${currentQuestionIndex + 1} من ${testData.questions.length}`;
     
-    // توجيه السؤال إلى الدالة المناسبة بناءً على نوع الاختبار
     switch (testData.testType) {
-        case 'writing':
-            displayWritingQuestion();
-            break;
-        case 'jumbled_letters':
-            displayJumbledLettersQuestion();
-            break;
-        case 'phonetic_distinction':
-            displayPhoneticQuestion();
-            break;
-        case 'multiple_choice':
-        default:
-            displayMultipleChoiceQuestion();
-            break;
+        case 'writing': displayWritingQuestion(); break;
+        case 'jumbled_letters': displayJumbledLettersQuestion(); break;
+        case 'phonetic_distinction': displayPhoneticQuestion(); break;
+        case 'multiple_choice': default: displayMultipleChoiceQuestion(); break;
     }
 }
 
@@ -150,17 +129,12 @@ function displayMultipleChoiceQuestion() {
     mcWordText.textContent = question.word;
     mcOptionsContainer.innerHTML = '';
 
-    const correctAnswer = question.meaning;
-    let options = [correctAnswer];
-    const wrongAnswers = testData.questions.filter(q => q.meaning !== correctAnswer).map(q => q.meaning);
-    const shuffledWrong = shuffleArray(wrongAnswers);
-    for (let i = 0; i < 3 && i < shuffledWrong.length; i++) {
-        options.push(shuffledWrong[i]);
-    }
+    let options = [question.meaning];
+    const wrongAnswers = shuffleArray(testData.questions.filter(q => q.meaning !== question.meaning)).map(q => q.meaning);
+    options.push(...wrongAnswers.slice(0, 3));
     while (options.length < 4) options.push(`خيار خاطئ ${options.length}`);
     
-    const shuffledOptions = shuffleArray(options);
-    shuffledOptions.forEach(optionText => {
+    shuffleArray(options).forEach(optionText => {
         const button = document.createElement('button');
         button.className = 'option';
         button.textContent = optionText;
@@ -187,8 +161,7 @@ function displayJumbledLettersQuestion() {
     jlAnswerDisplay.textContent = '';
     jlLettersContainer.innerHTML = '';
 
-    const letters = shuffleArray(question.word.toUpperCase().split(''));
-    letters.forEach(letter => {
+    shuffleArray(question.word.toUpperCase().split('')).forEach(letter => {
         const button = document.createElement('button');
         button.textContent = letter;
         button.addEventListener('click', () => {
@@ -207,8 +180,7 @@ function displayPhoneticQuestion() {
     const question = testData.questions[currentQuestionIndex];
     phOptionsContainer.innerHTML = '';
     
-    const shuffledOptions = shuffleArray(question.options);
-    shuffledOptions.forEach(optionText => {
+    shuffleArray(question.options).forEach(optionText => {
         const button = document.createElement('button');
         button.className = 'option';
         button.textContent = optionText;
@@ -220,24 +192,18 @@ function displayPhoneticQuestion() {
     speakWord(question.wordToSpeak);
 }
 
-// --- دوال التحقق من الإجابات ---
-
 function checkMultipleChoiceAnswer(selectedButton) {
     const allButtons = mcOptionsContainer.querySelectorAll('button');
     allButtons.forEach(button => button.disabled = true);
-    const isCorrect = selectedButton.textContent === testData.questions[currentQuestionIndex].meaning;
-    
-    handleFeedback(isCorrect, selectedButton, allButtons, testData.questions[currentQuestionIndex].meaning);
+    handleFeedback(selectedButton.textContent === testData.questions[currentQuestionIndex].meaning, selectedButton, allButtons, testData.questions[currentQuestionIndex].meaning);
     nextQuestion();
 }
 
 function checkWritingAnswer() {
     wrInput.disabled = true;
     wrCheckBtn.disabled = true;
-    const userAnswer = wrInput.value.trim().toLowerCase();
-    const correctAnswer = testData.questions[currentQuestionIndex].word.toLowerCase();
-    
-    if (userAnswer === correctAnswer) {
+    const isCorrect = wrInput.value.trim().toLowerCase() === testData.questions[currentQuestionIndex].word.toLowerCase();
+    if (isCorrect) {
         correctAnswers++;
         wrFeedback.textContent = 'إجابة صحيحة!';
         wrFeedback.style.color = 'green';
@@ -250,10 +216,8 @@ function checkWritingAnswer() {
 }
 
 function checkJumbledLettersAnswer() {
-    const userAnswer = jlAnswerDisplay.textContent;
-    const correctAnswer = testData.questions[currentQuestionIndex].word.toUpperCase();
-    
-    if (userAnswer === correctAnswer) {
+    const isCorrect = jlAnswerDisplay.textContent === testData.questions[currentQuestionIndex].word.toUpperCase();
+    if (isCorrect) {
         correctAnswers++;
         jlAnswerDisplay.style.color = 'green';
         jlAnswerDisplay.style.borderColor = 'green';
@@ -268,9 +232,7 @@ function checkJumbledLettersAnswer() {
 function checkPhoneticAnswer(selectedButton) {
     const allButtons = phOptionsContainer.querySelectorAll('button');
     allButtons.forEach(btn => btn.disabled = true);
-    const isCorrect = selectedButton.textContent === testData.questions[currentQuestionIndex].wordToSpeak;
-
-    handleFeedback(isCorrect, selectedButton, allButtons, testData.questions[currentQuestionIndex].wordToSpeak);
+    handleFeedback(selectedButton.textContent === testData.questions[currentQuestionIndex].wordToSpeak, selectedButton, allButtons, testData.questions[currentQuestionIndex].wordToSpeak);
     nextQuestion();
 }
 
@@ -289,6 +251,7 @@ function handleFeedback(isCorrect, selectedButton, allButtons, correctAnswerText
     }
 }
 
+
 function nextQuestion() {
     setTimeout(() => {
         jlAnswerDisplay.style.color = '';
@@ -297,8 +260,6 @@ function nextQuestion() {
         displayQuestion();
     }, FEEDBACK_DELAY);
 }
-
-// --- دوال إدارة الاختبار والنتائج ---
 
 function showResults() {
     showScreen('result');
@@ -310,19 +271,9 @@ function showResults() {
     finalScoreSpan.textContent = `نتيجتك النهائية هي: ${score}%`;
     saveStatus.textContent = "جاري حفظ نتيجتك...";
     
-    const resultData = {
-        name: studentName,
-        correct: correctAnswers,
-        incorrect: incorrectAnswers,
-        result: `${score}%`,
-        testId: selectedTestId
-    };
+    const resultData = { name: studentName, correct: correctAnswers, incorrect: incorrectAnswers, result: `${score}%`, testId: selectedTestId };
     const requestPayload = { action: 'saveResult', data: resultData };
-    fetch(API_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify(requestPayload)
-    })
+    fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(requestPayload) })
     .then(() => { saveStatus.textContent = "تم حفظ نتيجتك بنجاح!"; })
     .catch(err => {
         console.error("Save error:", err);
@@ -330,8 +281,7 @@ function showResults() {
     });
 }
 
-// --- ربط الأحداث (Event Listeners) ---
-
+// ... (ربط الأحداث يبقى كما هو) ...
 testListContainer.addEventListener('click', (event) => {
     const testButton = event.target.closest('.test-btn');
     if (testButton) {
@@ -371,24 +321,40 @@ wrCheckBtn.addEventListener('click', checkWritingAnswer);
 wrInput.addEventListener('keyup', (event) => { if (event.key === 'Enter') checkWritingAnswer(); });
 jlResetBtn.addEventListener('click', () => { displayJumbledLettersQuestion(); });
 
-// --- دوال مساعدة ---
 
+// --- دوال مساعدة (مع تعديل مهم) ---
+
+/**
+ * **دالة showScreen المعدلة والأكثر أمانًا**
+ * تقوم بإخفاء جميع الشاشات أولاً، ثم إظهار الشاشة المطلوبة فقط.
+ */
 function showScreen(screenName) {
-    document.querySelectorAll('#start-screen, #quiz-screen, #result-screen').forEach(s => s.classList.remove('active'));
-    loadingIndicator.style.display = 'none';
-    
-    const screenElement = document.getElementById(`${screenName}-screen`);
-    if (screenElement) {
-        if (screenName === 'loading') {
-            loadingIndicator.style.display = 'block';
-        } else {
-            screenElement.classList.add('active');
-        }
+    // أولاً، قم بإخفاء جميع الشاشات الرئيسية
+    allScreens.forEach(screen => {
+        screen.classList.remove('active');
+        screen.style.display = 'none'; // ضمان الإخفاء الكامل
+    });
+
+    // ثانيًا، ابحث عن الشاشة المطلوبة وأظهرها
+    const screenToShow = document.getElementById(`${screenName}-screen`);
+    if (screenToShow) {
+        screenToShow.style.display = 'block';
+        screenToShow.classList.add('active');
+    } else if (screenName === 'loading') {
+        // حالة خاصة لمؤشر التحميل الذي ليس له فئة 'active'
+        loadingIndicator.style.display = 'block';
     }
 }
 
+/**
+ * **دالة onFailure المعدلة**
+ * تعرض الخطأ بوضوح وتعود دائمًا إلى شاشة البداية.
+ */
 function onFailure(error) {
-    alert(`حدث خطأ: ${error.message}`);
+    console.error('An error occurred:', error); // تسجيل الخطأ في الكونسول للمطور
+    alert(`حدث خطأ: ${error.message}\nالرجاء المحاولة مرة أخرى.`);
+    
+    // إعادة التطبيق إلى حالته الأولية الآمنة
     nameInputContainer.style.display = 'none';
     testListContainer.style.display = 'block';
     showScreen('start');
