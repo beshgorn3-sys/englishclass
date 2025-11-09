@@ -1,6 +1,5 @@
 // =================================================
-// script.js - النسخة الكاملة والنهائية
-// يدعم الآن جميع أنواع الأسئلة بما في ذلك أفعال الكون
+// script.js - نسخة مصححة لمعالجة أخطاء ReferenceError
 // =================================================
 
 // !! مهم جداً: تأكد من أن هذا الرابط هو رابط الـ API الصحيح والفعال !!
@@ -23,7 +22,7 @@ const startBtn = document.getElementById('start-btn');
 // عناصر شاشة الاختبار العامة
 const progressText = document.getElementById('progress-text');
 
-// قوالب الأسئلة القديمة
+// قوالب الأسئلة
 const mcTemplate = document.getElementById('multiple-choice-template');
 const mcWordText = document.getElementById('mc-word-text');
 const mcSpeakButton = document.getElementById('mc-speak-button');
@@ -41,8 +40,6 @@ const jlResetBtn = document.getElementById('jl-reset-btn');
 const phTemplate = document.getElementById('phonetic-template');
 const phSpeakButton = document.getElementById('ph-speak-button');
 const phOptionsContainer = document.getElementById('ph-options-container');
-
-// عناصر قوالب أفعال الكون الجديدة
 const vtbFillTemplate = document.getElementById('vtb-fill-blank-template');
 const vtbFillSentence = document.getElementById('vtb-fill-sentence');
 const vtbFillOptions = document.getElementById('vtb-fill-options');
@@ -53,6 +50,18 @@ const vtbUnscrambleResetBtn = document.getElementById('vtb-unscramble-reset-btn'
 const vtbFormQuestionTemplate = document.getElementById('vtb-form-question-template');
 const vtbQuestionSentence = document.getElementById('vtb-question-sentence');
 const vtbQuestionOptions = document.getElementById('vtb-question-options');
+
+// ==========================================================
+// ** الجزء الذي تم حذفه بالخطأ وإعادة إضافته هنا **
+// عناصر شاشة النتائج
+const resultName = document.getElementById('result-name');
+const correctCountSpan = document.getElementById('correct-count');
+const incorrectCountSpan = document.getElementById('incorrect-count');
+const finalScoreSpan = document.getElementById('final-score');
+const saveStatus = document.getElementById('save-status');
+const restartBtn = document.getElementById('restart-btn');
+// ==========================================================
+
 
 // --- متغيرات حالة الاختبار ---
 let studentName = "";
@@ -115,7 +124,7 @@ function startQuiz() {
     displayQuestion();
 }
 
-// --- دالة عرض الأسئلة الموجهة (محدثة) ---
+// --- دالة عرض الأسئلة الموجهة ---
 function displayQuestion() {
     if (currentQuestionIndex >= testData.questions.length) {
         showResults();
